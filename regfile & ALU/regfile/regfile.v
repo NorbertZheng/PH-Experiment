@@ -22,15 +22,9 @@ module regfile(
 				begin
 				if(regwrite_i == 1)
 					registers[wa_i] <= (wa_i != 0) ? wd_i : 32'd0;
-				//for(i = 0;i <= 31;i = i + 1)
-				//	$display("%d\t%x", i, registers[i]);
 				end
 		end
 		
 	assign rd0_o = registers[ra0_i];
 	assign rd1_o = registers[ra1_i];
-	/*always@(rd0_o or rd1_o)
-		begin
-		$display("%x %x", registers[ra0_i], registers[ra1_i]);
-		end*/
 endmodule

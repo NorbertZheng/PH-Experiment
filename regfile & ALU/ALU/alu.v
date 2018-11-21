@@ -13,8 +13,6 @@ module alu(
 	reg [31:0]multiplicand_or_divisor;
 	reg [64:0]aluout_oR;
 	reg zero_oR;
-	reg signed [31:0]src0_iS;
-	reg signed [31:0]src1_iS;
 	
 	assign aluout_o = aluout_oR[63:0];
 	assign zero_o = zero_oR;
@@ -54,31 +52,13 @@ module alu(
 				end
 			`ALUOP_SLT:
 				begin
-				src0_iS = src0_i;
-				src1_iS = src1_i;
-				if(src0_iS >= src1_iS)
-					begin
-					zero_oR = 1'd0;
-					aluout_oR = {32'd0, 32'd0};
-					end
-				else
-					begin
-					zero_oR = 1'd1;
-					aluout_oR = {32'd0, 32'd1};
-					end
+				zero_oR = (((src0_i >= src1_i) && (src0_i[31] == src1_i[31])) || (src0_i[31] < src1_i[31])) ? 1'd0 : 1'd1;
+				aluout_oR = (((src0_i >= src1_i) && (src0_i[31] == src1_i[31])) || (src0_i[31] < src1_i[31])) ? {32'd0, 32'd0} : {32'd0, 32'd1};
 				end
 			`ALUOP_SLTU:
 				begin
-				if(src0_i >= src1_i)
-					begin
-					zero_oR = 1'd0;
-					aluout_oR = {32'd0, 32'd0};
-					end
-				else
-					begin
-					zero_oR = 1'd1;
-					aluout_oR = {32'd0, 32'd1};
-					end
+				zero_oR = (src0_i >= src1_i) ? 1'd0 : 1'd1;
+				aluout_oR = (src0_i >= src1_i) ? {32'd0, 32'd0} : {32'd0, 32'd1};
 				end
 			`ALUOP_MULT:
 				begin
@@ -201,6 +181,5 @@ module alu(
 			default:
 				aluout_oR = {33'd0, 32'd0};
 		endcase
-		$display("%x %x", aluout_oR[63:32], aluout_oR[31:0]);
 		end  
 endmodule
