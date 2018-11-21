@@ -9,50 +9,48 @@ module alu(
 	);
 
 	integer i;
-	reg [31:0]logic_rlt;
+	reg [31:0]lo;
+	reg [31:0]multiplicand_or_divisor;
+	reg [64:0]aluout_oR;
+	reg zero_oR;
 	reg signed [31:0]src0_iS;
 	reg signed [31:0]src1_iS;
-	reg [31:0]hi;
-	reg [31:0]lo;
-	//reg [31:0]temp;
-	reg [63:0]aluout_oR;
-	reg zero_oR;
-	assign aluout_o = aluout_oR;
+	
+	assign aluout_o = aluout_oR[63:0];
 	assign zero_o = zero_oR;
-	//logic
+	
 	always@(*)
 		begin
 		case (aluop_i)
 			`ALUOP_AND:
 				begin
-				logic_rlt = src0_i & src1_i;
-				$display("%x", logic_rlt);
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src0_i & src1_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_OR:
 				begin
-				logic_rlt = src0_i | src1_i;
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src0_i | src1_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_NOR:
 				begin
-				logic_rlt = ~(src0_i | src1_i);
-				aluout_oR = {32'd0, logic_rlt};
+				lo = ~(src0_i | src1_i);
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_LUI:
 				begin
-				logic_rlt = {src1_i[15:0], 16'd0};
-				aluout_oR = {32'd0, logic_rlt};
+				lo = {src1_i[15:0], 16'd0};
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_ADD:
 				begin
-				logic_rlt = src0_i + src1_i;
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src0_i + src1_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_SUB:
 				begin
-				logic_rlt = src0_i - src1_i;
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src0_i - src1_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_SLT:
 				begin
@@ -84,52 +82,124 @@ module alu(
 				end
 			`ALUOP_MULT:
 				begin
-				src0_iS = src0_i;
-				src1_iS = src1_i;
-				aluout_oR = src0_iS * src1_iS;
-				$display("%x %x", aluout_oR[63:32], aluout_oR[31:0]);
+				multiplicand_or_divisor = (~src0_i + 1 > src0_i) ? src0_i : (~src0_i + 1);
+				aluout_oR = {33'd0, (~src1_i + 1 > src1_i) ? src1_i : (~src1_i + 1)};
+				for(i = 0;i < 31;i = i + 1)
+					begin
+					if(aluout_oR[0])
+						begin
+						aluout_oR[64:32] = aluout_oR[64:32] + multiplicand_or_divisor;
+						end
+					aluout_oR = aluout_oR >> 1;
+					end
+				aluout_oR = aluout_oR >> 1;
+				aluout_oR = (src0_i[31] == src1_i[31]) ? aluout_oR[63:0] : (~aluout_oR[63:0] + 1);
 				end
 			`ALUOP_MULTU:
 				begin
-				aluout_oR = src0_i * src1_i;
-				$display("%x %x", aluout_oR[63:32], aluout_oR[31:0]);
+				aluout_oR = {33'd0, src1_i};
+				for(i = 0;i < 32;i = i + 1)
+					begin
+					if(aluout_oR[0])
+						begin
+						aluout_oR[64:32] = aluout_oR[64:32] + src0_i;
+						end
+					aluout_oR = aluout_oR >> 1;
+					end
 				end
 			`ALUOP_DIV:
 				begin
-				src0_iS = src0_i;
-				src1_iS = src1_i;
-				lo = src0_iS / src1_iS;
-				hi = src0_iS % src1_iS;
-				//$display("%x %x", hi, lo);
-				aluout_oR = {hi, lo};
+				multiplicand_or_divisor = (~src1_i + 1 > src1_i) ? src1_i : (~src1_i + 1);
+				aluout_oR = {33'd0, (~src0_i + 1 > src0_i) ? src0_i : (~src0_i + 1)};
+				for(i = 0;i < 33;i = i + 1)
+					begin
+					if(aluout_oR[64:32] >= multiplicand_or_divisor)
+						begin
+						if(i != 32)
+							begin
+							aluout_oR[64:32] = aluout_oR[64:32] - multiplicand_or_divisor;
+							aluout_oR = aluout_oR << 1;
+							aluout_oR[0] = 1;
+							end
+						else
+							begin
+							aluout_oR[64:32] = aluout_oR[64:32] - multiplicand_or_divisor;
+							aluout_oR[31:0] = aluout_oR[31:0] << 1;
+							aluout_oR[0] = 1;
+							end
+						end
+					else
+						begin
+						if(i != 32)
+							begin
+							aluout_oR = aluout_oR << 1;
+							aluout_oR[0] = 0;
+							end
+						else
+							begin
+							aluout_oR[31:0] = aluout_oR[31:0] << 1;
+							aluout_oR[0] = 0;
+							end
+						end
+					end
+				aluout_oR[63:32] = (src0_i[31]) ? (~aluout_oR[63:32] + 1) : aluout_oR[63:32];
+				aluout_oR[31:0] = ((src0_i[31] != src1_i[31])) ? (~aluout_oR[31:0] + 1) : aluout_oR[31:0];
 				end
 			`ALUOP_DIVU:
 				begin
-				lo = src0_i / src1_i;
-				hi = src0_i % src1_i;
-				//$display("%x %x", hi, lo);
-				aluout_oR = {hi, lo};
+				aluout_oR = {33'd0, src0_i};
+				for(i = 0;i < 33;i = i + 1)
+					begin
+					if(aluout_oR[64:32] >= src1_i)
+						begin
+						if(i != 32)
+							begin
+							aluout_oR[64:32] = aluout_oR[64:32] - src1_i;
+							aluout_oR = aluout_oR << 1;
+							aluout_oR[0] = 1;
+							end
+						else
+							begin
+							aluout_oR[64:32] = aluout_oR[64:32] - src1_i;
+							aluout_oR[31:0] = aluout_oR[31:0] << 1;
+							aluout_oR[0] = 1;
+							end
+						end
+					else
+						begin
+						if(i != 32)
+							begin
+							aluout_oR = aluout_oR << 1;
+							aluout_oR[0] = 0;
+							end
+						else
+							begin
+							aluout_oR[31:0] = aluout_oR[31:0] << 1;
+							aluout_oR[0] = 0;
+							end
+						end
+					end
 				end
 			`ALUOP_SLL:
 				begin
-				logic_rlt = src1_i << src0_i;
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src1_i << src0_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_SRL:
 				begin
-				logic_rlt = src1_i >> src0_i;
-				aluout_oR = {32'd0, logic_rlt};
+				lo = src1_i >> src0_i;
+				aluout_oR = {33'd0, lo};
 				end
 			`ALUOP_SRA:
 				begin
-				logic_rlt = src1_i >> src0_i;
+				lo = src1_i >> src0_i;
 				if((src1_i[31] == 1) && (src0_i > 0))
 					for(i = 0;i < src0_i;i = i + 1)
-						logic_rlt[31 - i] = 1;
-				aluout_oR = {32'd0, logic_rlt};
+						lo[31 - i] = 1;
+				aluout_oR = {33'd0, lo};
 				end
 			default:
-				aluout_oR = {32'd0, 32'd0};
+				aluout_oR = {33'd0, 32'd0};
 		endcase
 		$display("%x %x", aluout_oR[63:32], aluout_oR[31:0]);
 		end  
