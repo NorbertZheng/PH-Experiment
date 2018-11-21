@@ -56,18 +56,18 @@
   <p>&emsp;&emsp;对于除法器中实现`DIVU`(无符号数除法)基本上可以参照`计算机组成与设计`3.4节的思想:<br>
   <pre>
   for(i = 0;i < 33;i = i + 1)
-		begin
-		if(aluout_oR[64:32] >= src1_i)                                    //余数 - 除数 >= 0，这时商上1
-			begin
-			aluout_oR[64:32] = aluout_oR[64:32] - src1_i;
-			aluout_oR = aluout_oR << 1;
-			aluout_oR[0] = 1;
-			end
-		else                                                              //不可减，这时商上0
-			begin
-			aluout_oR = aluout_oR << 1;
-			aluout_oR[0] = 0;
-			end
+    begin
+    if(aluout_oR[64:32] >= src1_i)                                    //余数 - 除数 >= 0，这时商上1
+      begin
+      aluout_oR[64:32] = aluout_oR[64:32] - src1_i;
+      aluout_oR = aluout_oR << 1;
+      aluout_oR[0] = 1;
+      end
+    else                                                              //不可减，这时商上0
+      begin
+      aluout_oR = aluout_oR << 1;
+      aluout_oR[0] = 0;
+      end
     end
   </pre>
   但是由于在那一节中算法是基于没有优化的除法器结构，所以在实现该条指令的时候，有一个小细节是要做改动的，比如循环结尾:<br>
