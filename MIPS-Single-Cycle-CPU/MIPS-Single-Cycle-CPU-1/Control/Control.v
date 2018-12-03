@@ -1,4 +1,4 @@
-`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU//Define//instruction_def.v"
+`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU-1//Define//instruction_def.v"
 module Control(opcode, RegDst, Jump, Branch, MemRead, MemtoReg, ALUOp, MemWrite, ALUSrc, RegWrite);
 	input [5:0] opcode;
 	output reg RegDst;

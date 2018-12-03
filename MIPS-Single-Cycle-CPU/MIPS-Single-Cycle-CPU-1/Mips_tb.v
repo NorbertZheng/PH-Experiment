@@ -1,4 +1,4 @@
-`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU//Mips.v"
+`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU-1//Mips.v"
 `timescale  1ns/1ps
 module Mips_tb();
 	reg clk, reset;

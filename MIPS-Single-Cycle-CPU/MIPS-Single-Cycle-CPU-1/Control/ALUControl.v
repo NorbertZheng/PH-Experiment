@@ -1,4 +1,4 @@
-`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU//Define//instruction_def.v"
+`include "C://Users//Think//Desktop//MIPS-Single-Cycle-CPU-1//Define//instruction_def.v"
 module ALUControl(ALUOp, opcode, funct, ALU_control);
 	input [1:0] ALUOp;
 	input [5:0] opcode;
