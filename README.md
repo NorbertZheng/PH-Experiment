@@ -91,3 +91,8 @@
   <p>&emsp;&emsp;对于除法器中实现`DIV`(有符号数除法)，我的想法还是和之前实现`MULT`一样，转换成正数之后进行类似 DIVU 的运算，最后依据src0_i和src1_i的sign值对aluout_oR进行更新。</p><br>
   * 一些小问题
   <p>&emsp;&emsp;multiplicand_or_divisor寄存器的依赖性:我曾经想把它去掉，毕竟它只是一个中间变量，少一个reg少一点成本，但是本该可行的方案却在仿真时<b>无法pass testbench</b></p>
+
+
+## 实验二（MIPS单周期处理器）
+
+### 本实验并没有按照实验要求的结构来写，实验思路我明天再写：）
