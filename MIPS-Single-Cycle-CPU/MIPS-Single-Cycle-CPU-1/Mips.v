@@ -80,7 +80,7 @@ module Mips(clk, reset);
 	
 	//Jump_MemtoReg_Mux
 	wire [31:0] targetPC;
-	Mux #(32, 1) m_Jump_MemtoReg_Mux(.s(Jump), .y(writeData), .d0(tempWriteData), .d1(targetPC), .d2(32'b0), .d3(32'b0), .d4(32'b0), .d5(32'b0), .d6(32'b0), .d7(32'b0), .d8(32'b0), .d9(32'b0), .d10(32'b0), .d11(32'b0), .d12(32'b0), .d13(32'b0), .d14(32'b0), .d15(32'b0));
+	Mux #(32, 1) m_Jump_MemtoReg_Mux(.s(Jump), .y(writeData), .d0(tempWriteData), .d1(nextPC), .d2(32'b0), .d3(32'b0), .d4(32'b0), .d5(32'b0), .d6(32'b0), .d7(32'b0), .d8(32'b0), .d9(32'b0), .d10(32'b0), .d11(32'b0), .d12(32'b0), .d13(32'b0), .d14(32'b0), .d15(32'b0));
 	
 	//TargetPC
 	TargetPC m_TargetPC(.clk(clk), .nextPC(nextPC), .target(Instruction[25:0]), .targetPC(targetPC));
