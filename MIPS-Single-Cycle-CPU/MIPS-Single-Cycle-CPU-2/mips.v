@@ -67,7 +67,7 @@ module mips(clk, rst_n);
 	DM m_Data_memory(.clk(clk), .DMWr(DMWr), .addr_i(ALU_result[11:2]), .din_i(Read_data2), .dout_o(Read_data));
 	
 	//WDSel_Mux
-	mux #(2, 32) m_WDSel_Mux(.s(WDSel), .y(Write_data), .d0(ALU_result), .d1(Read_data), .d2(PC_i), .d3(32'b0));
+	mux #(2, 32) m_WDSel_Mux(.s(WDSel), .y(Write_data), .d0(ALU_result), .d1(Read_data), .d2(PC_plus4), .d3(32'b0));
 	
 	//PC_branch
 	wire [31:0] PC_branch;
