@@ -96,3 +96,53 @@
 ## 实验二（MIPS单周期处理器）
 
 ### 本实验并没有按照实验要求的结构来写，实验思路我明天再写：）
+
+## 实验三（MIPS多周期处理器）
+
+### 实验要求
+  <p>&emsp;&emsp;该实验要求写出一个基于MIPS指令集的多周期CPU，实现MIPS指令集中的42条指令，即
+  <pre>
+MIPS-C2＝{LB、LBU、LH、LHU、LW、SB、SH、SW、ADD、ADDU、SUB、SUBU、SLL、SRL、SRA、SLLV、SRLV、SRAV、AND、OR、XOR、NOR、SLT、SLTU、ADDI、ADDIU、ANDI、ORI、XORI、LUI、SLTI、SLTIU、BEQ、BNE、BLEZ、BGTZ、BLTZ、BGEZ、J、JAL、JALR、JR}
+  </pre>
+  所有指令皆可以不支持溢出.</p>
+  
+### 设计过程
+
+#### 1、Define（宏)
+  <p>&emsp;&emsp;一个实验最重要的部分就是先将所有有特殊意义的字段定义在 <span><a href = "https://github.com/Fassial/PH-Experiment/tree/master/MIPS-Multi-Cycle-CPU/MIPS-Multi-Cycle-CPU-2/Define"><b>Define</b></a> </span> 文件夹下。这样，不仅可以使程序可读性提升，而且修改的时候也方便进行更改。该文件夹下分为一下这些部分:
+  <pre>
+       Define ------- Instruction_Define.v			//包含42条指令的 opcode 及 funct 字段
+		|---- ALUOP_Define.v				//预定义ALU中可以执行的操作种类
+		|---- DEBUG_Define.v				//控制程序中是否进行 DEBUG (分布在RF、IM和MIPS——TB中)
+		|---- Fragmet_Define.v				//一些琐碎的宏定义
+  </pre>
+  </p>
+ 
+#### 2、Generatic(通用模块)
+  <p>&emsp;&emsp;这里主要就是定义了一些 <span><a href = "https://github.com/Fassial/PH-Experiment/blob/master/MIPS-Multi-Cycle-CPU/MIPS-Multi-Cycle-CPU-2/mips.v"><b>mips.v</b></a> </span> 文件中多次使用的一些模块，如
+  <pre>
+       （1）Mux
+           这个模块我就不多介绍了，就是一个16位的多路选择器(但是由于定义时使用了parameter，因而可以被实例化成各种不同位宽、输入信号的Mux).
+       （2）EXT
+           这个模块主要是支持了3种 Extend —— Sign、Logic、LUI.这些都在 Define 的　Fragment_Define.v 文件中定义好了,这样我们在 mips.v 中
+	   就可以用一个 EXT 模块通过实例化实现各种 Extend.
+	   主要也是为了方便调试!!!
+       （3）flopr
+           这个模块我是把它写成了一个小存储器,很像 IM 或 DM,但是本质是一个 Reg .而它不同于普通Reg的地方就是多了一个clk,且它的写只在时钟的下
+	   降沿进行.啊哈! 这是不是很像DM? 而它在 mips.v 中主要就是实例化为各种为适应多周期CPU而添加的Reg——ALUOut、IR等等...
+       （4）ReversePhase
+           这个模块本来是用在 beq 类指令上, 因为有时候 Zero 需要用它的反位来进行 write_next 信号的逻辑运算(或许还有其它方式达到此目的, 但是
+	   Fassial比较懒，这样写能过就行吧:)
+  </pre>
+  
+#### 3、Datapath(mips.v中的基本器件)
+  <p>&emsp;&emsp;器件基本上和 MIPS单周期CPU 相同，只不过多了BE、LoadBE这样 MIPS多周期CPU 专属的器件. 然后，稍微的一些改动就是:
+  <pre>
+      1、Registers.v 文件中修改了 $display DEBUG 的方式——一次性输出所有Registers.
+      2、PC.v 文件中取消了 clk 信号，将所有的 clk 触发驱动整个mips-cpu的任务交给 Control.v.
+      3、WriteNext.v 文件封装了 beq、j 等等跳转指令 与 PC正常Inc 的逻辑电路(不带clk).
+  </pre>
+  </p>
+  
+#### 4、Control(mips.v的中央控制器)
+  <p>&emsp;&emsp;Control采用独热码状态机编写，有一个地方代码不太简练，最后为了实现 J型指令 临时加入了 Rt(input).而该信号在Control中使用并不广泛，有待后期改正.至于复杂度嘛———————— <b><i>500+</i></b>行代码，你看着办:)</p>
